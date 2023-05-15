@@ -1,24 +1,27 @@
+from IPython.core.application import default
 from datasets import Dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainer, TrainingArguments, Seq2SeqTrainingArguments
 from tqdm.notebook import tqdm
 from torch.utils.data import DataLoader
 from itertools import repeat
+import argparse
 
 def read_data(path, tokenizer):
     input_lines = []
     label_lines = []
     with open(path, "r") as file:
         for line in file:
-            line = line.strip().split('\t')
-            input_lines.append(process(line[0]))
-            label_lines.append(process(line[1]))
+            example = line.strip().split('\t')
+            if len(example) == 2:
+              input_lines.append((example[0]))
+              label_lines.append((example[1]))
 
     dict_obj = {'inputs': input_lines, 'labels': label_lines}
     dataset = Dataset.from_dict(dict_obj)
 
-    tokenized_datasets = dataset.map(preprocess_function, tokenizer=tokenizer, batched=True, remove_columns=['inputs'], num_proc=8)
+    tokenized_datasets = dataset.map(preprocess_function, fn_kwargs={"tokenizer":tokenizer}, batched=True, remove_columns=['inputs'], num_proc=8)
 
-    return dataset
+    return tokenized_datasets
 
 def preprocess_function(examples, tokenizer):
     model_inputs = tokenizer(
@@ -36,8 +39,6 @@ def train(arg):
     if arg.gpus:
         model.to('cuda')
     
-    examples = read_data()
-
     train_dataset = read_data(arg.train, tokenizer)
     val_dataset = read_data(arg.val, tokenizer)
 
@@ -74,11 +75,13 @@ def train(arg):
 
 def arg_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pretrain", type=str, help="Pretrain Path")
-    parser.add_argument("--gpus", type=str, help="Use GPUS")
-    parser.add_argument("--lr", action="store_true", help="Learning Rate")
-    parser.add_argument("--batch", action="store_true", help="Num Batch")
-    parser.add_argument("--epoch", action="store_true", help="Num Epoch")
+    parser.add_argument("--pretrain", default = "VietAI/vit5-base", type=str, help="Pretrain Path")
+    parser.add_argument("--gpus", default= True, action="store_true", help="Use GPUS")
+    parser.add_argument("--lr", default=1e-5, help="Learning Rate")
+    parser.add_argument("--batch",default=4 , help="Num Batch")
+    parser.add_argument("--epoch", default=5, help="Num Epoch")
+    parser.add_argument("--train",default= "data/train.tsv" , help="Data train")
+    parser.add_argument("--val",default= "data/val.tsv" , help="Data val")
 
     # Parse the arguments
     args = parser.parse_args()
@@ -88,6 +91,7 @@ def arg_parse():
 if __name__ == "__main__":
     args = arg_parse()
     train(args)
+
 
 
 
