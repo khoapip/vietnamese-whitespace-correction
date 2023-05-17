@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Downloading Data"
-#gsutil cp -r gs://vietai_public/viT5/data/wikilingua .
+gsutil cp -r gs://vietai_public/viT5/data/wikilingua .
 #gsutil cp -r gs://vietai_public/viT5/data/vietnews .
 mkdir data
 
