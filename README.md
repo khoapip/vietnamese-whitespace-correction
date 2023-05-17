@@ -20,7 +20,7 @@ python train.py
 Todo cases:
 * [ ] Add harder cases to process function (insert corpus with whitespaces in between for single word whitespace removal)
 * [ ] Inference code and trained models
-* [ ] Test with PhoBART
+* [ ] Test with BARTPho
 * [ ] Perform a more thorough research 
 * [ ] Demo with streamlit
 
